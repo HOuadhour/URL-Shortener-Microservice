@@ -9,12 +9,14 @@ app.get("/", function (req, res) {
 app.post("/api/shorturl/new", (req, res) => {
   const error = { error: "Invalid URL" };
   try {
-    const url = new URL(req.body.url);
-    if (url.protocol.match(/https?:/)) {
-      addNewUrl(url.href.toLowerCase().trim())
+    let url = new URL(req.body.url);
+    if (url.protocol.match(/https?:/i)) {
+      url = url.toString().trim();
+      url = url.endsWith("/") ? url.slice(0, -1) : url;
+      addNewUrl(url)
         .then(doc => {
           res.json({
-            original_url: doc.full_url,
+            original_url: doc.original_url,
             short_url: doc.short_url,
           });
         })
@@ -29,14 +31,17 @@ app.post("/api/shorturl/new", (req, res) => {
   }
 });
 
-app.get("/api/shorturl/:counter", (req, res) => {
-  const { counter } = req.params;
-  findUrlByNumber(counter)
+app.get("/api/shorturl/:short_url", (req, res) => {
+  const { short_url } = req.params;
+  findUrlByNumber(short_url)
     .then(doc => {
-      if (doc) res.redirect(doc.full_url);
+      if (doc) res.redirect(doc.original_url);
+      else {
+        res.json({ error: "url not found in db" });
+      }
     })
     .catch(err => {
-      res.redirect("/");
+      res.json({ error: "url not found in db" });
     });
 });
 

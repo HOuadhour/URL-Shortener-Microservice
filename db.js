@@ -7,14 +7,14 @@ mongoose.connect(process.env.DB_URI, {
 });
 
 const urlSchema = mongoose.Schema({
-  full_url: { type: String, required: true },
+  original_url: { type: String, required: true },
   short_url: { type: Number, required: true },
 });
 
 const URLModel = mongoose.model("URLModel", urlSchema);
 
 function findUrl(url) {
-  return URLModel.findOne({ full_url: url }).exec();
+  return URLModel.findOne({ original_url: url }).exec();
 }
 
 function findUrlByNumber(number) {
@@ -27,7 +27,7 @@ function addNewUrl(href) {
   // check if url already exists or not
   return findUrl(href).then(doc => {
     if (!doc) {
-      url.full_url = href;
+      url.original_url = href;
       url.short_url = counter.value;
       url.save().then(() => updateCounter(counter));
       return url;
